@@ -48,6 +48,7 @@ class SteadpayController {
   final FetchFn _fetch;
   Timer? _timer;
   SteadpayStatus? _lastStatus;
+  String? _cardUpdateUrl;
   bool _isRecoveryPath = false;
   bool _disposed = false;
 
@@ -60,14 +61,22 @@ class SteadpayController {
 
   void start() {
     if (forcedStatus != null) {
+      const testUrl = 'https://example.com/update-card?forced=1';
+      _cardUpdateUrl = testUrl;
       _stateController.add(SteadpayState(
         status: forcedStatus!,
-        cardUpdateUrl: 'https://example.com/update-card?forced=1',
+        cardUpdateUrl: testUrl,
         entitlements: null,
       ));
       return;
     }
     _poll();
+  }
+
+  /// Pauses polling without disposing state. Call [start] to resume.
+  void stop() {
+    _timer?.cancel();
+    _timer = null;
   }
 
   void dispose() {
@@ -79,9 +88,8 @@ class SteadpayController {
   }
 
   Future<void> triggerCardUpdate() async {
-    final url = Uri.tryParse(
-      (_lastStatus != null) ? 'https://example.com/update-card' : '',
-    );
+    final rawUrl = _cardUpdateUrl;
+    final url = rawUrl != null ? Uri.tryParse(rawUrl) : null;
     _isRecoveryPath = true;
     _dismissedController.add(false);
     if (url != null && url.hasScheme) {
@@ -109,6 +117,7 @@ class SteadpayController {
       if (_disposed) return;
 
       final cbName = computeTransition(_lastStatus, state.status, wasRecovery);
+      _cardUpdateUrl = state.cardUpdateUrl;
       _stateController.add(state);
       _lastStatus = state.status;
       _fireCallback(cbName);
@@ -124,6 +133,7 @@ class SteadpayController {
       _stateController.add(const SteadpayState(status: SteadpayStatus.error));
       _lastStatus = SteadpayStatus.error;
       callbacks?.onError?.call(e);
+      _scheduleNextPoll();
     }
   }
 

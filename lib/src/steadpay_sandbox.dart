@@ -25,6 +25,7 @@ class SteadpaySandbox extends StatelessWidget {
       tenantSlug: 'sandbox',
       customerId: 'cus_sandbox',
       publishableKey: 'pk_test_sandbox',
+      forcedStatus: forcedStatus,
       lockoutScreen: lockoutScreen,
       warningBanner: warningBanner,
       child: child,

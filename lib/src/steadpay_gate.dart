@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
 import 'steadpay_config.dart';
 import 'steadpay_controller.dart';
@@ -25,6 +25,7 @@ class SteadpayGate extends StatefulWidget {
   final String customerId;
   final String publishableKey;
   final Duration pollInterval;
+  final SteadpayStatus? forcedStatus;
   final SteadpayCallbacks? callbacks;
   final LockoutScreenBuilder? lockoutScreen;
   final WarningBannerBuilder? warningBanner;
@@ -37,6 +38,7 @@ class SteadpayGate extends StatefulWidget {
     required this.customerId,
     required this.publishableKey,
     this.pollInterval = const Duration(minutes: 10),
+    this.forcedStatus,
     this.callbacks,
     this.lockoutScreen,
     this.warningBanner,
@@ -51,6 +53,8 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
   late SteadpayController _controller;
   SteadpayState _state = const SteadpayState(status: SteadpayStatus.loading);
   bool _dismissed = false;
+  StreamSubscription<SteadpayState>? _stateSub;
+  StreamSubscription<bool>? _dismissedSub;
 
   @override
   void initState() {
@@ -67,9 +71,13 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
     if (old.customerId != widget.customerId ||
         old.tenantSlug != widget.tenantSlug ||
         old.publishableKey != widget.publishableKey ||
-        old.apiBase != widget.apiBase) {
+        old.apiBase != widget.apiBase ||
+        old.forcedStatus != widget.forcedStatus) {
+      _stateSub?.cancel();
+      _dismissedSub?.cancel();
       _controller.dispose();
       _controller = _buildController();
+      _dismissed = false;
       _subscribe();
       _controller.start();
     }
@@ -80,15 +88,17 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
     if (state == AppLifecycleState.resumed) {
       _controller.start();
     } else if (state == AppLifecycleState.paused) {
-      _controller.dispose();
-      _controller = _buildController();
-      _subscribe();
+      // stop() pauses the timer without disposing state, preserving
+      // _isRecoveryPath across background/foreground cycles.
+      _controller.stop();
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _stateSub?.cancel();
+    _dismissedSub?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -101,14 +111,15 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
           publishableKey: widget.publishableKey,
           pollInterval: widget.pollInterval,
         ),
+        forcedStatus: widget.forcedStatus,
         callbacks: widget.callbacks,
       );
 
   void _subscribe() {
-    _controller.stateStream.listen((state) {
+    _stateSub = _controller.stateStream.listen((state) {
       if (mounted) setState(() => _state = state);
     });
-    _controller.dismissedStream.listen((dismissed) {
+    _dismissedSub = _controller.dismissedStream.listen((dismissed) {
       if (mounted) setState(() => _dismissed = dismissed);
     });
   }
