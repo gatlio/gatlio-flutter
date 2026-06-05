@@ -1,0 +1,17 @@
+name: arcta_example
+description: Arcta SaaS demo — steadpay_flutter SDK integration example.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  steadpay_flutter:
+    path: ../
+
+flutter:
+  uses-material-design: true
