@@ -16,6 +16,9 @@ typedef FetchFn = Future<SteadpayState> Function(
 
 typedef LaunchFn = Future<bool> Function(Uri url);
 
+Future<bool> _defaultLaunch(Uri url) =>
+    launchUrl(url, mode: LaunchMode.externalApplication);
+
 typedef SteadpayCallback = void Function(String customerId);
 
 class SteadpayCallbacks {
@@ -62,7 +65,7 @@ class SteadpayController {
     FetchFn? fetch,
     LaunchFn? launch,
   })  : _fetch = fetch ?? fetchSubscriberStatus,
-        _launch = launch ?? (url) => launchUrl(url, mode: LaunchMode.externalApplication);
+        _launch = launch ?? _defaultLaunch;
 
   void start() {
     if (forcedStatus != null) {
