@@ -62,6 +62,10 @@ void main() {
       await tester.tap(find.byKey(const Key('sandbox-pill-lockout')));
       await tester.pump();
 
+      // Panel closes on status change; reopen to inspect the log
+      await tester.tap(find.byKey(const Key('sandbox-dev-badge')));
+      await tester.pump();
+
       expect(find.textContaining('onLockout'), findsOneWidget);
     });
 

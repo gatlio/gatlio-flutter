@@ -14,6 +14,8 @@ typedef FetchFn = Future<SteadpayState> Function(
   String publishableKey,
 );
 
+typedef LaunchFn = Future<bool> Function(Uri url, {LaunchMode mode});
+
 typedef SteadpayCallback = void Function(String customerId);
 
 class SteadpayCallbacks {
@@ -46,6 +48,7 @@ class SteadpayController {
   Stream<bool> get dismissedStream => _dismissedController.stream;
 
   final FetchFn _fetch;
+  final LaunchFn _launch;
   Timer? _timer;
   SteadpayStatus? _lastStatus;
   String? _cardUpdateUrl;
@@ -57,7 +60,9 @@ class SteadpayController {
     this.forcedStatus,
     this.callbacks,
     FetchFn? fetch,
-  }) : _fetch = fetch ?? fetchSubscriberStatus;
+    LaunchFn? launch,
+  })  : _fetch = fetch ?? fetchSubscriberStatus,
+        _launch = launch ?? launchUrl;
 
   void start() {
     if (forcedStatus != null) {
@@ -93,7 +98,7 @@ class SteadpayController {
     _isRecoveryPath = true;
     _dismissedController.add(false);
     if (url != null && url.hasScheme) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+      await _launch(url, mode: LaunchMode.externalApplication);
     }
     _scheduleNextPoll(immediate: true);
   }

@@ -89,6 +89,7 @@ void main() {
         _config(),
         forcedStatus: SteadpayStatus.lockout,
         fetch: _mockFetch(SteadpayStatus.active),
+        launch: (_, {mode}) async => true,
       );
 
       controller.start();
