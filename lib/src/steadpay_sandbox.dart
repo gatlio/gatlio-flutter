@@ -44,17 +44,20 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
   SteadpayStatus _currentStatus = SteadpayStatus.active;
   SteadpayStatus? _lastStatus = SteadpayStatus.active;
   bool _panelOpen = false;
+  bool _dismissed = false;
   final List<String> _log = [];
 
   void _changeStatus(SteadpayStatus next) {
     if (next == SteadpayStatus.error) {
-      widget.onError?.call(Exception('sandbox_error'));
+      if (_currentStatus == SteadpayStatus.error) return;
       setState(() {
         _currentStatus = SteadpayStatus.error;
         _lastStatus = SteadpayStatus.error;
+        _dismissed = false;
         _log.insert(0, 'onError(sandbox_error)');
         if (_log.length > 5) _log.removeLast();
       });
+      widget.onError?.call(Exception('sandbox_error'));
       return;
     }
 
@@ -62,21 +65,25 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
     setState(() {
       _currentStatus = next;
       _lastStatus = next;
+      if (next != SteadpayStatus.warning) _dismissed = false;
       if (cbName != null) {
-        switch (cbName) {
-          case CallbackName.onLockout:
-            widget.onLockout?.call();
-          case CallbackName.onWarning:
-            widget.onWarning?.call();
-          case CallbackName.onActive:
-            widget.onActive?.call();
-          case CallbackName.onRecovered:
-            break;
-        }
         _log.insert(0, '${cbName.name}()');
         if (_log.length > 5) _log.removeLast();
       }
     });
+
+    if (cbName != null) {
+      switch (cbName) {
+        case CallbackName.onLockout:
+          widget.onLockout?.call();
+        case CallbackName.onWarning:
+          widget.onWarning?.call();
+        case CallbackName.onActive:
+          widget.onActive?.call();
+        case CallbackName.onRecovered:
+          break;
+      }
+    }
   }
 
   Widget _buildGateContent() {
@@ -95,15 +102,15 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
 
     return Column(
       children: [
-        if (_currentStatus == SteadpayStatus.warning)
+        if (_currentStatus == SteadpayStatus.warning && !_dismissed)
           widget.warningBanner != null
               ? widget.warningBanner!(
                   triggerCardUpdate: () {},
-                  dismissWarning: () {},
+                  dismissWarning: () => setState(() => _dismissed = true),
                 )
               : WarningBanner(
                   onTriggerCardUpdate: () {},
-                  onDismiss: () {},
+                  onDismiss: () => setState(() => _dismissed = true),
                 ),
         Expanded(child: widget.child),
       ],

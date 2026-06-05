@@ -74,5 +74,29 @@ void main() {
 
       expect(find.byKey(const Key('sandbox-recovered-note')), findsOneWidget);
     });
+
+    testWidgets('dismissing warning banner hides it', (tester) async {
+      await tester.pumpWidget(_wrap(SteadpaySandbox(
+        warningBanner: ({required triggerCardUpdate, required dismissWarning}) =>
+            GestureDetector(
+              key: const Key('dismiss-btn'),
+              onTap: dismissWarning,
+              child: const Text('dismiss-me'),
+            ),
+        child: const Text('content'),
+      )));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('sandbox-dev-badge')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('sandbox-pill-warning')));
+      await tester.pump();
+
+      expect(find.text('dismiss-me'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('dismiss-btn')));
+      await tester.pump();
+
+      expect(find.text('dismiss-me'), findsNothing);
+    });
   });
 }
