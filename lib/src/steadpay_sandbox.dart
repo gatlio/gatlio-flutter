@@ -256,12 +256,14 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _buildGateContent(),
-        _buildDevBadge(),
-        if (_panelOpen) ..._buildSheetOverlay(),
-      ],
+    return SizedBox.expand(
+      child: Stack(
+        children: [
+          _buildGateContent(),
+          _buildDevBadge(),
+          if (_panelOpen) ..._buildSheetOverlay(),
+        ],
+      ),
     );
   }
 }
