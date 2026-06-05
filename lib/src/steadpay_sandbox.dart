@@ -213,7 +213,10 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
             final isActive = _currentStatus == s;
             return GestureDetector(
               key: Key('sandbox-pill-${s.name}'),
-              onTap: () => _changeStatus(s),
+              onTap: () {
+                _changeStatus(s);
+                if (s != SteadpayStatus.error) setState(() => _panelOpen = false);
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
