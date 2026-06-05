@@ -45,14 +45,11 @@ void main() {
     test('start() emits correct status', () async {
       final controller = SteadpayController(_config(), fetch: _mockFetch(SteadpayStatus.active));
 
-      final first = await controller.stateStream.first.timeout(
-        const Duration(seconds: 2),
-        onTimeout: () => throw TimeoutException('start() did not emit'),
-      );
+      final emittedFuture = controller.stateStream.first
+          .timeout(const Duration(seconds: 2));
       controller.start();
 
-      // Wait for emission
-      final emitted = await controller.stateStream.first;
+      final emitted = await emittedFuture;
       expect(emitted.status, SteadpayStatus.active);
       controller.dispose();
     });

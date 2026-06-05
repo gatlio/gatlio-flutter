@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'compute_transition.dart';
-import 'entitlements.dart';
 import 'lockout_screen.dart';
+import 'steadpay_gate.dart';
 import 'steadpay_status.dart';
 import 'warning_banner.dart';
 

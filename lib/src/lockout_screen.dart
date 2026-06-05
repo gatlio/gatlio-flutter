@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'entitlements.dart';
 
 class LockoutScreen extends StatelessWidget {
   final bool poweredByWatermark;
