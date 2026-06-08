@@ -29,6 +29,10 @@ Future<SteadpayState> fetchSubscriberStatus(
   String publishableKey, {
   http.Client? client,
 }) async {
+  if (!baseUrl.startsWith('https://')) {
+    throw ArgumentError.value(baseUrl, 'baseUrl', 'must start with https://');
+  }
+
   final c = client ?? http.Client();
   final encodedSlug = Uri.encodeComponent(tenantSlug);
   final encodedCustomer = Uri.encodeComponent(customerId);
@@ -36,7 +40,9 @@ Future<SteadpayState> fetchSubscriberStatus(
     '$baseUrl/api/subscriber-status/$encodedSlug?stripe_customer_id=$encodedCustomer',
   );
 
-  final response = await c.get(uri, headers: {'Authorization': 'Bearer $publishableKey'});
+  final response = await c
+      .get(uri, headers: {'Authorization': 'Bearer $publishableKey'})
+      .timeout(const Duration(seconds: 10));
 
   if (response.statusCode == 402) return _failOpen;
   if (response.statusCode == 401) throw SteadpayApiError('unauthorized');

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:steadpay_flutter/steadpay_flutter.dart';
@@ -103,5 +104,25 @@ void main() {
       expect(capturedUri?.path, contains('/api/subscriber-status/$TENANT'));
       expect(capturedUri?.queryParameters['stripe_customer_id'], CUSTOMER);
     });
+
+    test('throws ArgumentError when baseUrl uses http://', () async {
+      final client = MockClient((_) async => http.Response('{}', 200));
+      expect(
+        () => fetchSubscriberStatus('http://app.steadpay.io', TENANT, CUSTOMER, KEY, client: client),
+        throwsA(isA<ArgumentError>().having((e) => e.message, 'message', contains('https://'))),
+      );
+    });
+
+    test('throws TimeoutException when request hangs beyond 10 s', () async {
+      final client = MockClient((_) async {
+        await Future<void>.delayed(const Duration(seconds: 15));
+        return http.Response('{}', 200);
+      });
+
+      await expectLater(
+        fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client),
+        throwsA(isA<TimeoutException>()),
+      );
+    }, timeout: const Timeout(Duration(seconds: 12)));
   });
 }

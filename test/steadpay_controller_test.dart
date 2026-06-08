@@ -105,6 +105,28 @@ void main() {
       controller.dispose();
     });
 
+    test('triggerCardUpdate() does not launch non-https URL', () async {
+      var launchCalled = false;
+      final controller = SteadpayController(
+        _config(),
+        fetch: (_, __, ___, ____) async => SteadpayState(
+          status: SteadpayStatus.lockout,
+          cardUpdateUrl: 'javascript:alert(1)',
+          entitlements: const Entitlements(poweredByWatermark: false, customDomain: false, downstreamWebhooks: false),
+        ),
+        launch: (_) async {
+          launchCalled = true;
+          return true;
+        },
+      );
+      controller.start();
+      await Future<void>.delayed(Duration.zero); // let poll complete
+      await controller.triggerCardUpdate();
+
+      expect(launchCalled, isFalse);
+      controller.dispose();
+    });
+
     test('dispose() closes streams', () async {
       final controller = SteadpayController(_config(), fetch: _mockFetch(SteadpayStatus.active));
       controller.dispose();

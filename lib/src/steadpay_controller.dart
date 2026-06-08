@@ -100,7 +100,7 @@ class SteadpayController {
     final url = rawUrl != null ? Uri.tryParse(rawUrl) : null;
     _isRecoveryPath = true;
     _dismissedController.add(false);
-    if (url != null && url.hasScheme) {
+    if (url != null && url.scheme == 'https') {
       await _launch(url);
     }
     _scheduleNextPoll(immediate: true);
