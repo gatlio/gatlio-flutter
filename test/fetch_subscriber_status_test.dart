@@ -107,8 +107,8 @@ void main() {
 
     test('throws ArgumentError when baseUrl uses http://', () async {
       final client = MockClient((_) async => http.Response('{}', 200));
-      expect(
-        () => fetchSubscriberStatus('http://app.steadpay.io', TENANT, CUSTOMER, KEY, client: client),
+      await expectLater(
+        fetchSubscriberStatus('http://app.steadpay.io', TENANT, CUSTOMER, KEY, client: client),
         throwsA(isA<ArgumentError>().having((e) => e.message, 'message', contains('https://'))),
       );
     });
