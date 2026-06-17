@@ -20,7 +20,12 @@ void main() {
     testWidgets('tapping lockout pill shows lockout screen', (tester) async {
       var lockoutBuilt = false;
       await tester.pumpWidget(_wrap(SteadpaySandbox(
-        lockoutScreen: ({required triggerCardUpdate, entitlements}) {
+        lockoutScreen: ({
+          required triggerCardUpdate,
+          entitlements,
+          required message,
+          required cta,
+        }) {
           lockoutBuilt = true;
           return const Text('custom-lockout');
         },
@@ -81,7 +86,7 @@ void main() {
 
     testWidgets('dismissing warning banner hides it', (tester) async {
       await tester.pumpWidget(_wrap(SteadpaySandbox(
-        warningBanner: ({required triggerCardUpdate, required dismissWarning}) =>
+        warningBanner: ({required dismissWarning, required message}) =>
             GestureDetector(
               key: const Key('dismiss-btn'),
               onTap: dismissWarning,
