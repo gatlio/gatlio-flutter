@@ -71,10 +71,22 @@ class SteadpayController {
     if (forcedStatus != null) {
       const testUrl = 'https://example.com/update-card?forced=1';
       _cardUpdateUrl = testUrl;
+      // Sample context so the sandbox renders representative copy.
+      final sampleRetryAt =
+          DateTime.now().toUtc().add(const Duration(days: 3)).toIso8601String();
       _stateController.add(SteadpayState(
         status: forcedStatus!,
         cardUpdateUrl: testUrl,
         entitlements: null,
+        declineCategory: forcedStatus == SteadpayStatus.warning
+            ? 'insufficient_funds'
+            : forcedStatus == SteadpayStatus.lockout
+                ? 'card_issue'
+                : null,
+        nextRetryAt:
+            forcedStatus == SteadpayStatus.warning ? sampleRetryAt : null,
+        lockoutReason:
+            forcedStatus == SteadpayStatus.lockout ? 'hard_decline' : null,
       ));
       return;
     }

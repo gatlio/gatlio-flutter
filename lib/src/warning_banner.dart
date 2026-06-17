@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+// No card-update CTA in warning state (#041): warning is only reachable via soft
+// decline, where retrying — not re-entering card details — is the resolution path.
 class WarningBanner extends StatelessWidget {
-  final VoidCallback onTriggerCardUpdate;
+  final String message;
   final VoidCallback onDismiss;
 
   const WarningBanner({
     super.key,
-    required this.onTriggerCardUpdate,
+    required this.message,
     required this.onDismiss,
   });
 
@@ -40,23 +42,12 @@ class WarningBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Please update your payment method to avoid interruption.',
-              style: TextStyle(fontSize: 13, color: Color(0xFFD4D4D4), height: 1.4),
-              maxLines: 2,
-            ),
-          ),
-          const SizedBox(width: 14),
-          GestureDetector(
-            onTap: onTriggerCardUpdate,
-            child: const Text(
-              'Update now',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFF59E0B),
-              ),
+              message,
+              style: const TextStyle(
+                  fontSize: 13, color: Color(0xFFD4D4D4), height: 1.4),
+              maxLines: 3,
             ),
           ),
           const SizedBox(width: 14),

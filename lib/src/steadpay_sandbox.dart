@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'compute_transition.dart';
+import 'enforcement_copy.dart';
 import 'lockout_screen.dart';
 import 'steadpay_gate.dart';
 import 'steadpay_status.dart';
@@ -86,30 +87,52 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
     }
   }
 
-  Widget _buildGateContent() {
+  Widget _buildGateContent(BuildContext context) {
+    final locale = Localizations.maybeLocaleOf(context)?.languageCode ?? 'en';
     if (_currentStatus == SteadpayStatus.lockout) {
+      final copy = lockoutCopy(
+        const EnforcementContext(
+          declineCategory: 'card_issue',
+          lockoutReason: 'hard_decline',
+        ),
+        locale,
+      );
       if (widget.lockoutScreen != null) {
         return widget.lockoutScreen!(
           triggerCardUpdate: () {},
           entitlements: null,
+          message: copy.message,
+          cta: copy.cta ?? '',
         );
       }
       return LockoutScreen(
         poweredByWatermark: true,
+        message: copy.message,
+        cta: copy.cta ?? '',
         onTriggerCardUpdate: () {},
       );
     }
+
+    final sampleRetryAt =
+        DateTime.now().toUtc().add(const Duration(days: 3)).toIso8601String();
+    final warningMessage = warningCopy(
+      EnforcementContext(
+        declineCategory: 'insufficient_funds',
+        nextRetryAt: sampleRetryAt,
+      ),
+      locale,
+    ).message;
 
     return Column(
       children: [
         if (_currentStatus == SteadpayStatus.warning && !_dismissed)
           widget.warningBanner != null
               ? widget.warningBanner!(
-                  triggerCardUpdate: () {},
                   dismissWarning: () => setState(() => _dismissed = true),
+                  message: warningMessage,
                 )
               : WarningBanner(
-                  onTriggerCardUpdate: () {},
+                  message: warningMessage,
                   onDismiss: () => setState(() => _dismissed = true),
                 ),
         Expanded(child: widget.child),
@@ -262,7 +285,7 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
     return SizedBox.expand(
       child: Stack(
         children: [
-          _buildGateContent(),
+          _buildGateContent(context),
           _buildDevBadge(),
           if (_panelOpen) ..._buildSheetOverlay(),
         ],

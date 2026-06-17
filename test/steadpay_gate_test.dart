@@ -53,16 +53,25 @@ void main() {
       await tester.pumpWidget(_wrap(
         _gate(
           SteadpayStatus.lockout,
-          lockoutScreen: ({required triggerCardUpdate, entitlements}) {
+          lockoutScreen: ({
+            required triggerCardUpdate,
+            entitlements,
+            required message,
+            required cta,
+          }) {
             builderCalled = true;
-            return const Text('custom lockout');
+            return Text('custom lockout: $message');
           },
         ),
       ));
       await tester.pump();
 
       expect(builderCalled, isTrue);
-      expect(find.text('custom lockout'), findsOneWidget);
+      expect(
+        find.text(
+            'custom lockout: Your payment method needs to be updated to restore access.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('custom warningBanner builder is called on warning', (tester) async {
@@ -70,16 +79,16 @@ void main() {
       await tester.pumpWidget(_wrap(
         _gate(
           SteadpayStatus.warning,
-          warningBanner: ({required triggerCardUpdate, required dismissWarning}) {
+          warningBanner: ({required dismissWarning, required message}) {
             builderCalled = true;
-            return const Text('custom banner');
+            return Text('custom banner: $message');
           },
         ),
       ));
       await tester.pump();
 
       expect(builderCalled, isTrue);
-      expect(find.text('custom banner'), findsOneWidget);
+      expect(find.textContaining('custom banner:'), findsOneWidget);
     });
   });
 }

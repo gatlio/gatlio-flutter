@@ -65,5 +65,9 @@ Future<SteadpayState> fetchSubscriberStatus(
       customDomain: ent['custom_domain'] as bool,
       downstreamWebhooks: ent['downstream_webhooks'] as bool,
     ),
+    declineCategory: json['decline_category'] as String?,
+    nextRetryAt: json['next_retry_at'] as String?,
+    isFinalRetry: json['is_final_retry'] as bool? ?? false,
+    lockoutReason: json['lockout_reason'] as String?,
   );
 }
