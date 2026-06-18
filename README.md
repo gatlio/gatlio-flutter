@@ -69,10 +69,10 @@ Callbacks fire on status *transitions*, not on every poll tick. `onRecovered` fi
 ```dart
 SteadpayGate(
   // ...
-  lockoutScreen: ({required triggerCardUpdate, entitlements}) =>
-      MyBrandedLockout(onUpdate: triggerCardUpdate),
-  warningBanner: ({required triggerCardUpdate, required dismissWarning}) =>
-      MyBrandedBanner(onUpdate: triggerCardUpdate, onDismiss: dismissWarning),
+  lockoutScreen: ({required triggerCardUpdate, entitlements, required message, required cta}) =>
+      MyBrandedLockout(onUpdate: triggerCardUpdate, message: message, cta: cta),
+  warningBanner: ({required dismissWarning, required message}) =>
+      MyBrandedBanner(message: message, onDismiss: dismissWarning),
   child: YourApp(),
 )
 ```
@@ -116,10 +116,10 @@ The sandbox accepts custom `lockoutScreen` and `warningBanner` overrides — pas
 
 ```dart
 SteadpaySandbox(
-  lockoutScreen: ({required triggerCardUpdate, entitlements}) =>
-      MyBrandedLockout(onUpdate: triggerCardUpdate),
-  warningBanner: ({required triggerCardUpdate, required dismissWarning}) =>
-      MyBrandedBanner(onUpdate: triggerCardUpdate, onDismiss: dismissWarning),
+  lockoutScreen: ({required triggerCardUpdate, entitlements, required message, required cta}) =>
+      MyBrandedLockout(onUpdate: triggerCardUpdate, message: message, cta: cta),
+  warningBanner: ({required dismissWarning, required message}) =>
+      MyBrandedBanner(message: message, onDismiss: dismissWarning),
   child: YourApp(),
 )
 ```
