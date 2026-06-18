@@ -39,6 +39,33 @@ void main() {
       expect(result.cardUpdateUrl, 'https://app.steadpay.io/update-card');
     });
 
+    test('parses context-aware copy fields (#041)', () async {
+      final body = _goodBody(status: 'warning')
+        ..addAll({
+          'decline_category': 'insufficient_funds',
+          'next_retry_at': '2026-06-20T12:00:00Z',
+          'is_final_retry': true,
+          'lockout_reason': null,
+        });
+      final client = _mockClient(200, body);
+      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+
+      expect(result.declineCategory, 'insufficient_funds');
+      expect(result.nextRetryAt, '2026-06-20T12:00:00Z');
+      expect(result.isFinalRetry, isTrue);
+      expect(result.lockoutReason, isNull);
+    });
+
+    test('defaults context fields to null/false when absent', () async {
+      final client = _mockClient(200, _goodBody());
+      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+
+      expect(result.declineCategory, isNull);
+      expect(result.nextRetryAt, isNull);
+      expect(result.isFinalRetry, isFalse);
+      expect(result.lockoutReason, isNull);
+    });
+
     test('returns fail-open active response on 402', () async {
       final client = _mockClient(402, {});
       final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);

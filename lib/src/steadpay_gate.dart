@@ -6,17 +6,20 @@ import 'steadpay_controller.dart';
 import 'steadpay_state.dart';
 import 'steadpay_status.dart';
 import 'entitlements.dart';
+import 'enforcement_copy.dart';
 import 'lockout_screen.dart';
 import 'warning_banner.dart';
 
 typedef LockoutScreenBuilder = Widget Function({
   required VoidCallback triggerCardUpdate,
   Entitlements? entitlements,
+  required String message,
+  required String cta,
 });
 
 typedef WarningBannerBuilder = Widget Function({
-  required VoidCallback triggerCardUpdate,
   required VoidCallback dismissWarning,
+  required String message,
 });
 
 class SteadpayGate extends StatefulWidget {
@@ -29,6 +32,9 @@ class SteadpayGate extends StatefulWidget {
   final SteadpayCallbacks? callbacks;
   final LockoutScreenBuilder? lockoutScreen;
   final WarningBannerBuilder? warningBanner;
+
+  /// Override the language for enforcement copy. Defaults to the app/device locale.
+  final String? locale;
   final Widget child;
 
   const SteadpayGate({
@@ -42,6 +48,7 @@ class SteadpayGate extends StatefulWidget {
     this.callbacks,
     this.lockoutScreen,
     this.warningBanner,
+    this.locale,
     required this.child,
   });
 
@@ -124,33 +131,47 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
     });
   }
 
+  String _resolveLocale(BuildContext context) =>
+      widget.locale ??
+      Localizations.maybeLocaleOf(context)?.languageCode ??
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+
   @override
   Widget build(BuildContext context) {
+    final locale = _resolveLocale(context);
+
     if (_state.status == SteadpayStatus.lockout) {
+      final copy = lockoutCopy(_state.enforcementContext, locale);
       if (widget.lockoutScreen != null) {
         return widget.lockoutScreen!(
           triggerCardUpdate: _controller.triggerCardUpdate,
           entitlements: _state.entitlements,
+          message: copy.message,
+          cta: copy.cta ?? '',
         );
       }
       return LockoutScreen(
         poweredByWatermark: _state.entitlements?.poweredByWatermark ?? true,
+        message: copy.message,
+        cta: copy.cta ?? '',
         onTriggerCardUpdate: _controller.triggerCardUpdate,
       );
     }
 
     final showBanner = _state.status == SteadpayStatus.warning && !_dismissed;
+    final warningMessage =
+        warningCopy(_state.enforcementContext, locale).message;
 
     return Column(
       children: [
         if (showBanner)
           widget.warningBanner != null
               ? widget.warningBanner!(
-                  triggerCardUpdate: _controller.triggerCardUpdate,
                   dismissWarning: _controller.dismissWarning,
+                  message: warningMessage,
                 )
               : WarningBanner(
-                  onTriggerCardUpdate: _controller.triggerCardUpdate,
+                  message: warningMessage,
                   onDismiss: _controller.dismissWarning,
                 ),
         Expanded(child: widget.child),

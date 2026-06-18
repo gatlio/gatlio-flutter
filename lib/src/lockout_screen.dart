@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 
 class LockoutScreen extends StatelessWidget {
   final bool poweredByWatermark;
+  final String message;
+  final String cta;
   final VoidCallback onTriggerCardUpdate;
 
   const LockoutScreen({
     super.key,
     required this.poweredByWatermark,
+    required this.message,
+    required this.cta,
     required this.onTriggerCardUpdate,
   });
 
@@ -35,9 +39,9 @@ class LockoutScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Your subscription is paused.\nUpdate your card to continue.',
-                    style: TextStyle(
+                  Text(
+                    message,
+                    style: const TextStyle(
                       fontSize: 15,
                       color: Color(0xFF888888),
                       height: 1.5,
@@ -55,9 +59,10 @@ class LockoutScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: const StadiumBorder(),
                       ),
-                      child: const Text(
-                        'Update payment method',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      child: Text(
+                        cta,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
