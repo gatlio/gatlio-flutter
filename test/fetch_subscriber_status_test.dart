@@ -10,6 +10,7 @@ const BASE_URL = 'https://app.steadpay.io';
 const TENANT = 'acme';
 const CUSTOMER = 'cus_123';
 const KEY = 'pk_live_abc';
+const HMAC = 'test_hmac_value';
 
 Map<String, dynamic> _goodBody({String status = 'active'}) => {
       'status': status,
@@ -32,7 +33,7 @@ void main() {
   group('fetchSubscriberStatus', () {
     test('returns parsed SteadpayState on 200', () async {
       final client = _mockClient(200, _goodBody());
-      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
       expect(result.status, SteadpayStatus.active);
       expect(result.entitlements!.poweredByWatermark, isTrue);
@@ -48,7 +49,7 @@ void main() {
           'lockout_reason': null,
         });
       final client = _mockClient(200, body);
-      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
       expect(result.declineCategory, 'insufficient_funds');
       expect(result.nextRetryAt, '2026-06-20T12:00:00Z');
@@ -58,7 +59,7 @@ void main() {
 
     test('defaults context fields to null/false when absent', () async {
       final client = _mockClient(200, _goodBody());
-      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
       expect(result.declineCategory, isNull);
       expect(result.nextRetryAt, isNull);
@@ -68,7 +69,7 @@ void main() {
 
     test('returns fail-open active response on 402', () async {
       final client = _mockClient(402, {});
-      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+      final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
       expect(result.status, SteadpayStatus.active);
       expect(result.entitlements!.poweredByWatermark, isFalse);
@@ -78,7 +79,7 @@ void main() {
     test('throws SteadpayApiError(unauthorized) on 401', () async {
       final client = _mockClient(401, {});
       expect(
-        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client),
+        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
         throwsA(isA<SteadpayApiError>().having((e) => e.code, 'code', 'unauthorized')),
       );
     });
@@ -86,7 +87,7 @@ void main() {
     test('throws SteadpayApiError(tenant_not_found) on 404', () async {
       final client = _mockClient(404, {});
       expect(
-        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client),
+        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
         throwsA(isA<SteadpayApiError>().having((e) => e.code, 'code', 'tenant_not_found')),
       );
     });
@@ -94,7 +95,7 @@ void main() {
     test('throws on unexpected status (e.g. 500)', () async {
       final client = _mockClient(500, {});
       expect(
-        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client),
+        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
         throwsA(isA<SteadpayApiError>().having((e) => e.code, 'code', 'unexpected_status_500')),
       );
     });
@@ -102,7 +103,7 @@ void main() {
     test('propagates network errors', () async {
       final client = MockClient((_) async => throw Exception('Network request failed'));
       expect(
-        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client),
+        () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
         throwsA(isA<Exception>()),
       );
     });
@@ -114,7 +115,7 @@ void main() {
         return http.Response(jsonEncode(_goodBody()), 200);
       });
 
-      await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+      await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
       expect(capturedRequest?.headers['Authorization'], 'Bearer $KEY');
     });
@@ -126,16 +127,17 @@ void main() {
         return http.Response(jsonEncode(_goodBody()), 200);
       });
 
-      await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client);
+      await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
       expect(capturedUri?.path, contains('/api/subscriber-status/$TENANT'));
       expect(capturedUri?.queryParameters['stripe_customer_id'], CUSTOMER);
+      expect(capturedUri?.queryParameters['hmac'], HMAC);
     });
 
     test('throws ArgumentError when baseUrl uses http://', () async {
       final client = MockClient((_) async => http.Response('{}', 200));
       await expectLater(
-        fetchSubscriberStatus('http://app.steadpay.io', TENANT, CUSTOMER, KEY, client: client),
+        fetchSubscriberStatus('http://app.steadpay.io', TENANT, CUSTOMER, KEY, HMAC, client: client),
         throwsA(isA<ArgumentError>().having((e) => e.message, 'message', contains('https://'))),
       );
     });
@@ -147,7 +149,7 @@ void main() {
       });
 
       await expectLater(
-        fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, client: client),
+        fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
         throwsA(isA<TimeoutException>()),
       );
     }, timeout: const Timeout(Duration(seconds: 12)));

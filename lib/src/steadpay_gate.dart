@@ -27,6 +27,7 @@ class SteadpayGate extends StatefulWidget {
   final String tenantSlug;
   final String customerId;
   final String publishableKey;
+  final String hmac;
   final Duration pollInterval;
   final SteadpayStatus? forcedStatus;
   final SteadpayCallbacks? callbacks;
@@ -43,6 +44,7 @@ class SteadpayGate extends StatefulWidget {
     required this.tenantSlug,
     required this.customerId,
     required this.publishableKey,
+    required this.hmac,
     this.pollInterval = const Duration(minutes: 10),
     this.forcedStatus,
     this.callbacks,
@@ -79,6 +81,7 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
         old.tenantSlug != widget.tenantSlug ||
         old.publishableKey != widget.publishableKey ||
         old.apiBase != widget.apiBase ||
+        old.hmac != widget.hmac ||
         old.forcedStatus != widget.forcedStatus) {
       _stateSub?.cancel();
       _dismissedSub?.cancel();
@@ -116,6 +119,7 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
           tenantSlug: widget.tenantSlug,
           customerId: widget.customerId,
           publishableKey: widget.publishableKey,
+          hmac: widget.hmac,
           pollInterval: widget.pollInterval,
         ),
         forcedStatus: widget.forcedStatus,

@@ -7,6 +7,7 @@ SteadpayConfig _config() => const SteadpayConfig(
       tenantSlug: 'acme',
       customerId: 'cus_123',
       publishableKey: 'pk_live_abc',
+      hmac: 'test_hmac',
     );
 
 SteadpayState _activeState() => SteadpayState(
@@ -19,7 +20,7 @@ SteadpayState _activeState() => SteadpayState(
       ),
     );
 
-FetchFn _mockFetch(SteadpayStatus status) => (_, __, ___, ____) async => SteadpayState(
+FetchFn _mockFetch(SteadpayStatus status) => (_, __, ___, ____, _____) async => SteadpayState(
       status: status,
       cardUpdateUrl: 'https://app.steadpay.io/update-card',
       entitlements: const Entitlements(
@@ -59,7 +60,7 @@ void main() {
       final controller = SteadpayController(
         _config(),
         forcedStatus: SteadpayStatus.lockout,
-        fetch: (_, __, ___, ____) async {
+        fetch: (_, __, ___, ____, _____) async {
           fetchCalled = true;
           return _activeState();
         },
@@ -109,7 +110,7 @@ void main() {
       var launchCalled = false;
       final controller = SteadpayController(
         _config(),
-        fetch: (_, __, ___, ____) async => SteadpayState(
+        fetch: (_, __, ___, ____, _____) async => SteadpayState(
           status: SteadpayStatus.lockout,
           cardUpdateUrl: 'javascript:alert(1)',
           entitlements: const Entitlements(poweredByWatermark: false, customDomain: false, downstreamWebhooks: false),

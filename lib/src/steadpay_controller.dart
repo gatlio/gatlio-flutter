@@ -12,6 +12,7 @@ typedef FetchFn = Future<SteadpayState> Function(
   String tenantSlug,
   String customerId,
   String publishableKey,
+  String hmac,
 );
 
 typedef LaunchFn = Future<bool> Function(Uri url);
@@ -133,6 +134,7 @@ class SteadpayController {
         config.tenantSlug,
         config.customerId,
         config.publishableKey,
+        config.hmac,
       );
       if (_disposed) return;
 
