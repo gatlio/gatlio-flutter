@@ -26,7 +26,8 @@ Future<SteadpayState> fetchSubscriberStatus(
   String baseUrl,
   String tenantSlug,
   String customerId,
-  String publishableKey, {
+  String publishableKey,
+  String hmac, {
   http.Client? client,
 }) async {
   if (!baseUrl.startsWith('https://')) {
@@ -36,8 +37,9 @@ Future<SteadpayState> fetchSubscriberStatus(
   final c = client ?? http.Client();
   final encodedSlug = Uri.encodeComponent(tenantSlug);
   final encodedCustomer = Uri.encodeComponent(customerId);
+  final encodedHmac = Uri.encodeComponent(hmac);
   final uri = Uri.parse(
-    '$baseUrl/api/subscriber-status/$encodedSlug?stripe_customer_id=$encodedCustomer',
+    '$baseUrl/api/subscriber-status/$encodedSlug?stripe_customer_id=$encodedCustomer&hmac=$encodedHmac',
   );
 
   final response = await c

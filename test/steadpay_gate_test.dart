@@ -15,6 +15,7 @@ SteadpayGate _gate(
     tenantSlug: 'test',
     customerId: 'cus_test',
     publishableKey: 'pk_test',
+    hmac: 'test_hmac',
     forcedStatus: status,
     lockoutScreen: lockoutScreen,
     warningBanner: warningBanner,
