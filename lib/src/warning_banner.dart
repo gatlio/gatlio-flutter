@@ -47,7 +47,7 @@ class WarningBanner extends StatelessWidget {
               message,
               style: const TextStyle(
                   fontSize: 13, color: Color(0xFFD4D4D4), height: 1.4),
-              maxLines: 3,
+              maxLines: 4,
             ),
           ),
           const SizedBox(width: 14),
