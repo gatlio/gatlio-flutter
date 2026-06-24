@@ -49,7 +49,7 @@ void main() {
           ctx(declineCategory: 'insufficient_funds', nextRetryAt: iso), 'en');
       expect(c.cta, isNull);
       expect(c.message,
-          "We'll retry on $d. Please ensure sufficient funds are available.");
+          "Your payment failed. We'll retry on $d — please ensure funds are available.");
     });
     test('insufficient_funds final', () {
       final c = warningCopy(
@@ -59,13 +59,13 @@ void main() {
               isFinalRetry: true),
           'en');
       expect(c.message,
-          'This is our final retry on $d. Please add funds — your access will be restricted if it fails.');
+          'Your payment failed. Final retry on $d — add funds or your access will be restricted.');
     });
     test('bank_hold normal', () {
       expect(
         warningCopy(ctx(declineCategory: 'bank_hold', nextRetryAt: iso), 'en')
             .message,
-        "We'll retry on $d. You may want to contact your bank.",
+        "Your payment was held by your bank. We'll retry on $d — you may want to contact them.",
       );
     });
     test('processing_error normal', () {
@@ -73,14 +73,14 @@ void main() {
         warningCopy(
                 ctx(declineCategory: 'processing_error', nextRetryAt: iso), 'en')
             .message,
-        "There was a temporary processing issue. We'll retry on $d.",
+        "Your payment failed due to a temporary issue. We'll retry on $d.",
       );
     });
     test('card_issue normal (in-flight reachable)', () {
       expect(
         warningCopy(ctx(declineCategory: 'card_issue', nextRetryAt: iso), 'en')
             .message,
-        "We'll retry on $d, but your saved card may need updating to go through.",
+        "Your payment failed. We'll retry on $d, but your saved card may need updating.",
       );
     });
     test('falls back to generic for unmapped category', () {
@@ -96,7 +96,7 @@ void main() {
               nextRetryAt: iso,
               isFinalRetry: true),
           'fr');
-      expect(c.message, contains('Ceci est notre dernier essai'));
+      expect(c.message, contains('Dernier essai'));
     });
   });
 
