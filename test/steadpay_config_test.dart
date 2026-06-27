@@ -13,6 +13,24 @@ SteadpayConfig _validConfig({Duration? pollInterval}) => SteadpayConfig(
 
 void main() {
   group('SteadpayConfig', () {
+    test('http apiBase throws ArgumentError', () {
+      expect(
+        () => SteadpayConfig(
+          apiBase: 'http://app.steadpay.io',
+          tenantSlug: 'acme',
+          customerId: 'cus_123',
+          publishableKey: 'pk_live_abc',
+          hmac: 'test_hmac',
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('https apiBase is allowed', () {
+      final config = _validConfig();
+      expect(config.apiBase, startsWith('https://'));
+    });
+
     test('poll interval below 1 minute throws ArgumentError', () {
       expect(
         () => _validConfig(pollInterval: const Duration(seconds: 59)),
