@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:steadpay_flutter/steadpay_flutter.dart';
 
-SteadpayConfig _config() => const SteadpayConfig(
+SteadpayConfig _config() => SteadpayConfig(
       apiBase: 'https://app.steadpay.io',
       tenantSlug: 'acme',
       customerId: 'cus_123',
