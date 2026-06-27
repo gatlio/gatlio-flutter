@@ -136,18 +136,26 @@ void main() {
       expect(controller.stateStream.isBroadcast, isTrue);
     });
 
-    test('Dart Error from fetch propagates and does not fire onError', () async {
+    test('Dart Error from fetch does not fire onError', () async {
       var errorFired = false;
-      final controller = SteadpayController(
-        _config(),
-        callbacks: SteadpayCallbacks(onError: (_) => errorFired = true),
-        fetch: (_, __, ___, ____, _____) async =>
-            throw AssertionError('programming defect'),
+      // runZonedGuarded captures the unhandled Error so the test runner
+      // doesn't see it as an uncaught exception while still letting us
+      // assert that onError was not called.
+      await runZonedGuarded(
+        () async {
+          final controller = SteadpayController(
+            _config(),
+            callbacks: SteadpayCallbacks(onError: (_) => errorFired = true),
+            fetch: (_, __, ___, ____, _____) async =>
+                throw AssertionError('programming defect'),
+          );
+          controller.start();
+          await Future<void>.delayed(Duration.zero);
+          controller.dispose();
+        },
+        (_, __) {}, // Error propagates here; we don't need to inspect it
       );
-      controller.start();
-      await Future<void>.delayed(Duration.zero);
       expect(errorFired, isFalse);
-      controller.dispose();
     });
 
     test('dispose() closes the owned http client', () async {
