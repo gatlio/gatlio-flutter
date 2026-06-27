@@ -122,10 +122,8 @@ void main() {
 
     test('sends correct endpoint path with stripe_customer_id', () async {
       Uri? capturedUri;
-      http.Request? capturedRequest;
       final client = MockClient((request) async {
         capturedUri = request.url;
-        capturedRequest = request;
         return http.Response(jsonEncode(_goodBody()), 200);
       });
 
