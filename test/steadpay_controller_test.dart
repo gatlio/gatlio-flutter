@@ -136,6 +136,20 @@ void main() {
       expect(controller.stateStream.isBroadcast, isTrue);
     });
 
+    test('Dart Error from fetch propagates and does not fire onError', () async {
+      var errorFired = false;
+      final controller = SteadpayController(
+        _config(),
+        callbacks: SteadpayCallbacks(onError: (_) => errorFired = true),
+        fetch: (_, __, ___, ____, _____) async =>
+            throw AssertionError('programming defect'),
+      );
+      controller.start();
+      await Future<void>.delayed(Duration.zero);
+      expect(errorFired, isFalse);
+      controller.dispose();
+    });
+
     test('dispose() closes the owned http client', () async {
       final client = _TrackingClient();
       final controller = SteadpayController(

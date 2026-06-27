@@ -37,13 +37,15 @@ Future<SteadpayState> fetchSubscriberStatus(
   final c = client ?? http.Client();
   final encodedSlug = Uri.encodeComponent(tenantSlug);
   final encodedCustomer = Uri.encodeComponent(customerId);
-  final encodedHmac = Uri.encodeComponent(hmac);
   final uri = Uri.parse(
-    '$baseUrl/api/subscriber-status/$encodedSlug?stripe_customer_id=$encodedCustomer&hmac=$encodedHmac',
+    '$baseUrl/api/subscriber-status/$encodedSlug?stripe_customer_id=$encodedCustomer',
   );
 
   final response = await c
-      .get(uri, headers: {'Authorization': 'Bearer $publishableKey'})
+      .get(uri, headers: {
+        'Authorization': 'Bearer $publishableKey',
+        'X-Steadpay-HMAC': hmac,
+      })
       .timeout(const Duration(seconds: 10));
 
   if (response.statusCode == 402) return _failOpen;

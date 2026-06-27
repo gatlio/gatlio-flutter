@@ -166,6 +166,7 @@ class SteadpayController {
 
       _scheduleNextPoll();
     } catch (e) {
+      if (e is Error) rethrow;
       if (_disposed) return;
       _stateController.add(const SteadpayState(status: SteadpayStatus.error));
       _lastStatus = SteadpayStatus.error;

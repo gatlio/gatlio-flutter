@@ -131,7 +131,20 @@ void main() {
 
       expect(capturedUri?.path, contains('/api/subscriber-status/$TENANT'));
       expect(capturedUri?.queryParameters['stripe_customer_id'], CUSTOMER);
-      expect(capturedUri?.queryParameters['hmac'], HMAC);
+      expect(capturedUri?.queryParameters.containsKey('hmac'), isFalse,
+          reason: 'HMAC must not appear in URL');
+    });
+
+    test('sends HMAC in X-Steadpay-HMAC header', () async {
+      http.Request? capturedRequest;
+      final client = MockClient((request) async {
+        capturedRequest = request;
+        return http.Response(jsonEncode(_goodBody()), 200);
+      });
+
+      await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
+
+      expect(capturedRequest?.headers['X-Steadpay-HMAC'], HMAC);
     });
 
     test('throws ArgumentError when baseUrl uses http://', () async {
