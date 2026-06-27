@@ -1,9 +1,9 @@
-import 'steadpay_status.dart';
+import 'gatlio_status.dart';
 import 'entitlements.dart';
 import 'enforcement_copy.dart';
 
-class SteadpayState {
-  final SteadpayStatus status;
+class GatlioState {
+  final GatlioStatus status;
   final String? cardUpdateUrl;
   final Entitlements? entitlements;
 
@@ -13,7 +13,7 @@ class SteadpayState {
   final bool isFinalRetry;
   final String? lockoutReason;
 
-  const SteadpayState({
+  const GatlioState({
     required this.status,
     this.cardUpdateUrl,
     this.entitlements,
@@ -32,7 +32,7 @@ class SteadpayState {
 
   @override
   bool operator ==(Object other) =>
-      other is SteadpayState &&
+      other is GatlioState &&
       other.status == status &&
       other.cardUpdateUrl == cardUpdateUrl &&
       other.entitlements == entitlements &&

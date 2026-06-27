@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 import 'arcta_content.dart';
 import 'settings_screen.dart';
 
@@ -20,7 +20,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SteadpaySandbox(
+      body: GatlioSandbox(
         onLockout: () => debugPrint('lockout'),
         onWarning: () => debugPrint('warning'),
         onActive: () => debugPrint('active'),

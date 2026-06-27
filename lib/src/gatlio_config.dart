@@ -1,4 +1,4 @@
-class SteadpayConfig {
+class GatlioConfig {
   final String apiBase;
   final String tenantSlug;
   final String customerId;
@@ -6,7 +6,7 @@ class SteadpayConfig {
   final String hmac;
   final Duration pollInterval;
 
-  SteadpayConfig({
+  GatlioConfig({
     required this.apiBase,
     required this.tenantSlug,
     required this.customerId,

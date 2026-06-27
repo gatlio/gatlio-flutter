@@ -1,19 +1,19 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'steadpay_state.dart';
-import 'steadpay_status.dart';
+import 'gatlio_state.dart';
+import 'gatlio_status.dart';
 import 'entitlements.dart';
 
-class SteadpayApiError implements Exception {
+class GatlioApiError implements Exception {
   final String code;
-  SteadpayApiError(this.code);
+  GatlioApiError(this.code);
   @override
-  String toString() => 'SteadpayApiError: $code';
+  String toString() => 'GatlioApiError: $code';
 }
 
-final _failOpen = SteadpayState(
-  status: SteadpayStatus.active,
+final _failOpen = GatlioState(
+  status: GatlioStatus.active,
   cardUpdateUrl: null,
   entitlements: const Entitlements(
     poweredByWatermark: false,
@@ -22,7 +22,7 @@ final _failOpen = SteadpayState(
   ),
 );
 
-Future<SteadpayState> fetchSubscriberStatus(
+Future<GatlioState> fetchSubscriberStatus(
   String baseUrl,
   String tenantSlug,
   String customerId,
@@ -44,24 +44,24 @@ Future<SteadpayState> fetchSubscriberStatus(
   final response = await c
       .get(uri, headers: {
         'Authorization': 'Bearer $publishableKey',
-        'X-Steadpay-HMAC': hmac,
+        'X-Gatlio-HMAC': hmac,
       })
       .timeout(const Duration(seconds: 10));
 
   if (response.statusCode == 402) return _failOpen;
-  if (response.statusCode == 401) throw SteadpayApiError('unauthorized');
-  if (response.statusCode == 404) throw SteadpayApiError('tenant_not_found');
+  if (response.statusCode == 401) throw GatlioApiError('unauthorized');
+  if (response.statusCode == 404) throw GatlioApiError('tenant_not_found');
   if (response.statusCode != 200) {
-    throw SteadpayApiError('unexpected_status_${response.statusCode}');
+    throw GatlioApiError('unexpected_status_${response.statusCode}');
   }
 
   final json = jsonDecode(response.body) as Map<String, dynamic>;
   final ent = json['entitlements'] as Map<String, dynamic>;
 
-  return SteadpayState(
-    status: SteadpayStatus.values.firstWhere(
+  return GatlioState(
+    status: GatlioStatus.values.firstWhere(
       (s) => s.name == json['status'],
-      orElse: () => SteadpayStatus.error,
+      orElse: () => GatlioStatus.error,
     ),
     cardUpdateUrl: json['card_update_url'] as String?,
     entitlements: Entitlements(

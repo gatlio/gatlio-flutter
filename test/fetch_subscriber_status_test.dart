@@ -4,9 +4,9 @@ import 'package:http/testing.dart';
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
-const BASE_URL = 'https://app.steadpay.io';
+const BASE_URL = 'https://app.gatlio.io';
 const TENANT = 'acme';
 const CUSTOMER = 'cus_123';
 const KEY = 'pk_live_abc';
@@ -19,7 +19,7 @@ Map<String, dynamic> _goodBody({String status = 'active'}) => {
         'custom_domain': false,
         'downstream_webhooks': false,
       },
-      'card_update_url': 'https://app.steadpay.io/update-card',
+      'card_update_url': 'https://app.gatlio.io/update-card',
     };
 
 MockClient _mockClient(int statusCode, Map<String, dynamic> body) {
@@ -31,13 +31,13 @@ MockClient _mockClient(int statusCode, Map<String, dynamic> body) {
 
 void main() {
   group('fetchSubscriberStatus', () {
-    test('returns parsed SteadpayState on 200', () async {
+    test('returns parsed GatlioState on 200', () async {
       final client = _mockClient(200, _goodBody());
       final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
-      expect(result.status, SteadpayStatus.active);
+      expect(result.status, GatlioStatus.active);
       expect(result.entitlements!.poweredByWatermark, isTrue);
-      expect(result.cardUpdateUrl, 'https://app.steadpay.io/update-card');
+      expect(result.cardUpdateUrl, 'https://app.gatlio.io/update-card');
     });
 
     test('parses context-aware copy fields (#041)', () async {
@@ -71,24 +71,24 @@ void main() {
       final client = _mockClient(402, {});
       final result = await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
-      expect(result.status, SteadpayStatus.active);
+      expect(result.status, GatlioStatus.active);
       expect(result.entitlements!.poweredByWatermark, isFalse);
       expect(result.cardUpdateUrl, isNull);
     });
 
-    test('throws SteadpayApiError(unauthorized) on 401', () async {
+    test('throws GatlioApiError(unauthorized) on 401', () async {
       final client = _mockClient(401, {});
       expect(
         () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
-        throwsA(isA<SteadpayApiError>().having((e) => e.code, 'code', 'unauthorized')),
+        throwsA(isA<GatlioApiError>().having((e) => e.code, 'code', 'unauthorized')),
       );
     });
 
-    test('throws SteadpayApiError(tenant_not_found) on 404', () async {
+    test('throws GatlioApiError(tenant_not_found) on 404', () async {
       final client = _mockClient(404, {});
       expect(
         () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
-        throwsA(isA<SteadpayApiError>().having((e) => e.code, 'code', 'tenant_not_found')),
+        throwsA(isA<GatlioApiError>().having((e) => e.code, 'code', 'tenant_not_found')),
       );
     });
 
@@ -96,7 +96,7 @@ void main() {
       final client = _mockClient(500, {});
       expect(
         () => fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client),
-        throwsA(isA<SteadpayApiError>().having((e) => e.code, 'code', 'unexpected_status_500')),
+        throwsA(isA<GatlioApiError>().having((e) => e.code, 'code', 'unexpected_status_500')),
       );
     });
 
@@ -135,7 +135,7 @@ void main() {
           reason: 'HMAC must not appear in URL');
     });
 
-    test('sends HMAC in X-Steadpay-HMAC header', () async {
+    test('sends HMAC in X-Gatlio-HMAC header', () async {
       http.Request? capturedRequest;
       final client = MockClient((request) async {
         capturedRequest = request;
@@ -144,13 +144,13 @@ void main() {
 
       await fetchSubscriberStatus(BASE_URL, TENANT, CUSTOMER, KEY, HMAC, client: client);
 
-      expect(capturedRequest?.headers['X-Steadpay-HMAC'], HMAC);
+      expect(capturedRequest?.headers['X-Gatlio-HMAC'], HMAC);
     });
 
     test('throws ArgumentError when baseUrl uses http://', () async {
       final client = MockClient((_) async => http.Response('{}', 200));
       await expectLater(
-        fetchSubscriberStatus('http://app.steadpay.io', TENANT, CUSTOMER, KEY, HMAC, client: client),
+        fetchSubscriberStatus('http://app.gatlio.io', TENANT, CUSTOMER, KEY, HMAC, client: client),
         throwsA(isA<ArgumentError>().having((e) => e.message, 'message', contains('https://'))),
       );
     });

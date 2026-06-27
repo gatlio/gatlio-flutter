@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-SteadpayGate _gate(
-  SteadpayStatus status, {
+GatlioGate _gate(
+  GatlioStatus status, {
   LockoutScreenBuilder? lockoutScreen,
   WarningBannerBuilder? warningBanner,
 }) {
-  return SteadpayGate(
+  return GatlioGate(
     apiBase: 'https://example.com',
     tenantSlug: 'test',
     customerId: 'cus_test',
@@ -24,9 +24,9 @@ SteadpayGate _gate(
 }
 
 void main() {
-  group('SteadpayGate widget', () {
+  group('GatlioGate widget', () {
     testWidgets('renders children on active (forced)', (tester) async {
-      await tester.pumpWidget(_wrap(_gate(SteadpayStatus.active)));
+      await tester.pumpWidget(_wrap(_gate(GatlioStatus.active)));
       await tester.pump();
 
       expect(find.text('protected content'), findsOneWidget);
@@ -34,7 +34,7 @@ void main() {
     });
 
     testWidgets('renders lockout screen on lockout (forced)', (tester) async {
-      await tester.pumpWidget(_wrap(_gate(SteadpayStatus.lockout)));
+      await tester.pumpWidget(_wrap(_gate(GatlioStatus.lockout)));
       await tester.pump();
 
       expect(find.byType(LockoutScreen), findsOneWidget);
@@ -42,7 +42,7 @@ void main() {
     });
 
     testWidgets('renders warning banner and children on warning (forced)', (tester) async {
-      await tester.pumpWidget(_wrap(_gate(SteadpayStatus.warning)));
+      await tester.pumpWidget(_wrap(_gate(GatlioStatus.warning)));
       await tester.pump();
 
       expect(find.byType(WarningBanner), findsOneWidget);
@@ -53,7 +53,7 @@ void main() {
       var builderCalled = false;
       await tester.pumpWidget(_wrap(
         _gate(
-          SteadpayStatus.lockout,
+          GatlioStatus.lockout,
           lockoutScreen: ({
             required triggerCardUpdate,
             entitlements,
@@ -79,7 +79,7 @@ void main() {
       var builderCalled = false;
       await tester.pumpWidget(_wrap(
         _gate(
-          SteadpayStatus.warning,
+          GatlioStatus.warning,
           warningBanner: ({required dismissWarning, required message}) {
             builderCalled = true;
             return Text('custom banner: $message');

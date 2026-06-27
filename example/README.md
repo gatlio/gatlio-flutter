@@ -1,17 +1,17 @@
-# Arcta Example — steadpay-flutter
+# Arcta Example — gatlio-flutter
 
-A fictional analytics SaaS app that demonstrates a complete `steadpay_flutter` integration. Arcta is used as the host app throughout Steadpay's example suite so you can compare SDK behaviour across platforms side by side.
+A fictional analytics SaaS app that demonstrates a complete `gatlio_flutter` integration. Arcta is used as the host app throughout Gatlio's example suite so you can compare SDK behaviour across platforms side by side.
 
 ## Screens
 
 | Screen | File | Purpose |
 |--------|------|---------|
 | Login | `lib/login_screen.dart` | Fake login form — any credentials navigate to Home |
-| Home | `lib/home_screen.dart` | Main content wrapped in `SteadpaySandbox` |
+| Home | `lib/home_screen.dart` | Main content wrapped in `GatlioSandbox` |
 | Settings | `lib/settings_screen.dart` | Static account info screen |
 | Content | `lib/arcta_content.dart` | Fake analytics dashboard — the "protected" content |
 
-`SteadpaySandbox` lives in `home_screen.dart`. It wraps `ArctaContent` and surfaces a `DEV` badge in the bottom-right corner of the screen.
+`GatlioSandbox` lives in `home_screen.dart`. It wraps `ArctaContent` and surfaces a `DEV` badge in the bottom-right corner of the screen.
 
 ## Running
 
@@ -62,9 +62,9 @@ flutter run -d <device-id>
 
 Flutter detects both iOS and Android devices automatically. iOS requires a trusted developer certificate (a free Apple account works).
 
-> Physical devices can't reach `localhost`. Use ngrok (`ngrok http 3000`) to expose your local Steadpay instance and enter the ngrok URL in Live mode. The Android Emulator reaches the host machine at `10.0.2.2` — use `http://10.0.2.2:3000` instead of `localhost`.
+> Physical devices can't reach `localhost`. Use ngrok (`ngrok http 3000`) to expose your local Gatlio instance and enter the ngrok URL in Live mode. The Android Emulator reaches the host machine at `10.0.2.2` — use `http://10.0.2.2:3000` instead of `localhost`.
 
-## Testing with SteadpaySandbox
+## Testing with GatlioSandbox
 
 ### Sandbox mode (no server needed)
 
@@ -98,9 +98,9 @@ The sheet also shows a **callback log** (last 5 invocations). Confirm `onLockout
 
 `onRecovered` is **not** fired by the sandbox — it requires the real card update flow. Test it in Live mode with a Stripe test card.
 
-### Live mode (real Steadpay instance)
+### Live mode (real Gatlio instance)
 
-1. Start Steadpay locally (`npm run dev`) and expose it via ngrok (physical device) or use `http://10.0.2.2:3000` (Android Emulator) or `http://localhost:3000` (iOS Simulator).
+1. Start Gatlio locally (`npm run dev`) and expose it via ngrok (physical device) or use `http://10.0.2.2:3000` (Android Emulator) or `http://localhost:3000` (iOS Simulator).
 2. Run `npm run seed` to create the `test-harness` tenant and seeded subscribers.
 3. In the example app, tap the **DEV** badge and switch to **Live** mode in the sheet.
 4. Enter:
@@ -117,7 +117,7 @@ UPDATE subscribers SET status = 'lockout'
 WHERE stripe_customer_id = 'cus_harness_warning';
 ```
 
-Background the app and foreground it — `WidgetsBindingObserver.didChangeAppLifecycleState` fires a poll when the app resumes and the `SteadpayController` notifies listeners.
+Background the app and foreground it — `WidgetsBindingObserver.didChangeAppLifecycleState` fires a poll when the app resumes and the `GatlioController` notifies listeners.
 
 > Flutter is the only SDK where one codebase targets both iOS and Android. After triggering a state change, verify the UI on both platforms in the same session with `flutter run -d all`.
 
@@ -125,9 +125,9 @@ Background the app and foreground it — `WidgetsBindingObserver.didChangeAppLif
 
 ```dart
 // lib/home_screen.dart
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
-SteadpaySandbox(
+GatlioSandbox(
   onLockout: () => debugPrint('lockout'),
   onWarning: () => debugPrint('warning'),
   onActive: () => debugPrint('active'),
@@ -135,13 +135,13 @@ SteadpaySandbox(
 )
 ```
 
-For production, replace `SteadpaySandbox` with `SteadpayGate`:
+For production, replace `GatlioSandbox` with `GatlioGate`:
 
 ```dart
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
-SteadpayGate(
-  apiBase: 'https://api.steadpay.com',
+GatlioGate(
+  apiBase: 'https://api.gatlio.com',
   tenantSlug: 'your-slug',
   publishableKey: 'pk_live_xxx',
   customerId: currentUser.stripeCustomerId,

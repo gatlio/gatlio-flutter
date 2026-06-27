@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'steadpay_config.dart';
-import 'steadpay_controller.dart';
-import 'steadpay_state.dart';
-import 'steadpay_status.dart';
+import 'gatlio_config.dart';
+import 'gatlio_controller.dart';
+import 'gatlio_state.dart';
+import 'gatlio_status.dart';
 import 'entitlements.dart';
 import 'enforcement_copy.dart';
 import 'lockout_screen.dart';
@@ -22,15 +22,15 @@ typedef WarningBannerBuilder = Widget Function({
   required String message,
 });
 
-class SteadpayGate extends StatefulWidget {
+class GatlioGate extends StatefulWidget {
   final String apiBase;
   final String tenantSlug;
   final String customerId;
   final String publishableKey;
   final String hmac;
   final Duration pollInterval;
-  final SteadpayStatus? forcedStatus;
-  final SteadpayCallbacks? callbacks;
+  final GatlioStatus? forcedStatus;
+  final GatlioCallbacks? callbacks;
   final LockoutScreenBuilder? lockoutScreen;
   final WarningBannerBuilder? warningBanner;
 
@@ -38,7 +38,7 @@ class SteadpayGate extends StatefulWidget {
   final String? locale;
   final Widget child;
 
-  const SteadpayGate({
+  const GatlioGate({
     super.key,
     required this.apiBase,
     required this.tenantSlug,
@@ -55,14 +55,14 @@ class SteadpayGate extends StatefulWidget {
   });
 
   @override
-  State<SteadpayGate> createState() => _SteadpayGateState();
+  State<GatlioGate> createState() => _GatlioGateState();
 }
 
-class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver {
-  late SteadpayController _controller;
-  SteadpayState _state = const SteadpayState(status: SteadpayStatus.loading);
+class _GatlioGateState extends State<GatlioGate> with WidgetsBindingObserver {
+  late GatlioController _controller;
+  GatlioState _state = const GatlioState(status: GatlioStatus.loading);
   bool _dismissed = false;
-  StreamSubscription<SteadpayState>? _stateSub;
+  StreamSubscription<GatlioState>? _stateSub;
   StreamSubscription<bool>? _dismissedSub;
 
   @override
@@ -75,7 +75,7 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
   }
 
   @override
-  void didUpdateWidget(SteadpayGate old) {
+  void didUpdateWidget(GatlioGate old) {
     super.didUpdateWidget(old);
     if (old.customerId != widget.customerId ||
         old.tenantSlug != widget.tenantSlug ||
@@ -113,8 +113,8 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
     super.dispose();
   }
 
-  SteadpayController _buildController() => SteadpayController(
-        SteadpayConfig(
+  GatlioController _buildController() => GatlioController(
+        GatlioConfig(
           apiBase: widget.apiBase,
           tenantSlug: widget.tenantSlug,
           customerId: widget.customerId,
@@ -144,7 +144,7 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
   Widget build(BuildContext context) {
     final locale = _resolveLocale(context);
 
-    if (_state.status == SteadpayStatus.lockout) {
+    if (_state.status == GatlioStatus.lockout) {
       final copy = lockoutCopy(_state.enforcementContext, locale);
       if (widget.lockoutScreen != null) {
         return widget.lockoutScreen!(
@@ -162,7 +162,7 @@ class _SteadpayGateState extends State<SteadpayGate> with WidgetsBindingObserver
       );
     }
 
-    final showBanner = _state.status == SteadpayStatus.warning && !_dismissed;
+    final showBanner = _state.status == GatlioStatus.warning && !_dismissed;
     final warningMessage =
         warningCopy(_state.enforcementContext, locale).message;
 

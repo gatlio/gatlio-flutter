@@ -76,7 +76,7 @@ class LockoutScreen extends StatelessWidget {
               left: 0,
               right: 0,
               child: Text(
-                'Powered by Steadpay',
+                'Powered by Gatlio',
                 style: TextStyle(fontSize: 12, color: Color(0xFF444444)),
                 textAlign: TextAlign.center,
               ),

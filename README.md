@@ -1,6 +1,6 @@
-# steadpay_flutter
+# gatlio_flutter
 
-Flutter SDK for [Steadpay](https://steadpay.io) billing enforcement. Drop-in widget that enforces subscriber billing states natively — no WebView, no platform channels.
+Flutter SDK for [Gatlio](https://gatlio.io) billing enforcement. Drop-in widget that enforces subscriber billing states natively — no WebView, no platform channels.
 
 ## Installation
 
@@ -8,20 +8,20 @@ Add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  steadpay_flutter:
+  gatlio_flutter:
     git:
-      url: https://github.com/steadpay/steadpay-flutter.git
+      url: https://github.com/gatlio/gatlio-flutter.git
 ```
 
 ## Quick start
 
-Wrap the authenticated portion of your app in `SteadpayGate`:
+Wrap the authenticated portion of your app in `GatlioGate`:
 
 ```dart
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
-SteadpayGate(
-  apiBase: 'https://app.steadpay.io',
+GatlioGate(
+  apiBase: 'https://app.gatlio.io',
   tenantSlug: 'acme',
   customerId: currentUser.stripeCustomerId,
   publishableKey: 'pk_live_abc123',
@@ -31,7 +31,7 @@ SteadpayGate(
 
 When billing is current, `YourApp` renders normally. In `warning` state a dismissable banner appears above it. In `lockout` a full-screen overlay replaces all content until the card is updated.
 
-## `SteadpayGate` — parameters
+## `GatlioGate` — parameters
 
 | Parameter | Type | Required | Default |
 |-----------|------|----------|---------|
@@ -40,8 +40,8 @@ When billing is current, `YourApp` renders normally. In `warning` state a dismis
 | `customerId` | `String` | ✓ | — |
 | `publishableKey` | `String` | ✓ | — |
 | `pollInterval` | `Duration` | | `Duration(minutes: 10)` |
-| `forcedStatus` | `SteadpayStatus?` | | `null` |
-| `callbacks` | `SteadpayCallbacks?` | | `null` |
+| `forcedStatus` | `GatlioStatus?` | | `null` |
+| `callbacks` | `GatlioCallbacks?` | | `null` |
 | `lockoutScreen` | `LockoutScreenBuilder?` | | built-in |
 | `warningBanner` | `WarningBannerBuilder?` | | built-in |
 | `child` | `Widget` | ✓ | — |
@@ -49,9 +49,9 @@ When billing is current, `YourApp` renders normally. In `warning` state a dismis
 ## Callbacks
 
 ```dart
-SteadpayGate(
+GatlioGate(
   // ...
-  callbacks: SteadpayCallbacks(
+  callbacks: GatlioCallbacks(
     onLockout: () => print('locked out'),
     onWarning: () => print('warning'),
     onActive: () => print('active'),
@@ -67,7 +67,7 @@ Callbacks fire on status *transitions*, not on every poll tick. `onRecovered` fi
 ## Custom enforcement UI
 
 ```dart
-SteadpayGate(
+GatlioGate(
   // ...
   lockoutScreen: ({required triggerCardUpdate, entitlements, required message, required cta}) =>
       MyBrandedLockout(onUpdate: triggerCardUpdate, message: message, cta: cta),
@@ -82,28 +82,28 @@ SteadpayGate(
 ### Force a state — `forcedStatus`
 
 ```dart
-SteadpayGate(
-  apiBase: 'https://app.steadpay.io',
+GatlioGate(
+  apiBase: 'https://app.gatlio.io',
   tenantSlug: 'acme',
   customerId: 'cus_test',
   publishableKey: 'pk_test_abc',
-  forcedStatus: SteadpayStatus.lockout,  // no network calls
+  forcedStatus: GatlioStatus.lockout,  // no network calls
   child: YourApp(),
 )
 ```
 
 Remove `forcedStatus` before shipping.
 
-### Interactive harness — `SteadpaySandbox`
+### Interactive harness — `GatlioSandbox`
 
-`SteadpaySandbox` is a drop-in dev widget that lets you switch billing states and verify your callbacks without a real Steadpay account.
+`GatlioSandbox` is a drop-in dev widget that lets you switch billing states and verify your callbacks without a real Gatlio account.
 
 **How it works:** your content renders at full size with a small `DEV` badge anchored to the bottom-right corner as a true overlay. Tap the badge to open a control sheet; tap a state pill to switch states; tap the backdrop to dismiss the sheet.
 
 ```dart
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
-SteadpaySandbox(
+GatlioSandbox(
   onLockout: () => print('locked out'),
   onWarning: () => print('warning'),
   onActive: () => print('active'),
@@ -115,7 +115,7 @@ SteadpaySandbox(
 The sandbox accepts custom `lockoutScreen` and `warningBanner` overrides — pass them to verify your own UI and dismiss handlers:
 
 ```dart
-SteadpaySandbox(
+GatlioSandbox(
   lockoutScreen: ({required triggerCardUpdate, entitlements, required message, required cta}) =>
       MyBrandedLockout(onUpdate: triggerCardUpdate, message: message, cta: cta),
   warningBanner: ({required dismissWarning, required message}) =>
@@ -142,18 +142,18 @@ SteadpaySandbox(
 | any → `error` | `onError` (first press only) |
 | same → same | nothing |
 
-**`onRecovered` is not fired by the sandbox** — it requires the real card update flow. Test it against a live Steadpay environment.
+**`onRecovered` is not fired by the sandbox** — it requires the real card update flow. Test it against a live Gatlio environment.
 
-Remove `SteadpaySandbox` before shipping to production.
+Remove `GatlioSandbox` before shipping to production.
 
 ## Direct controller usage
 
 For custom state management (Riverpod, Bloc, etc.):
 
 ```dart
-final controller = SteadpayController(
-  SteadpayConfig(
-    apiBase: 'https://app.steadpay.io',
+final controller = GatlioController(
+  GatlioConfig(
+    apiBase: 'https://app.gatlio.io',
     tenantSlug: 'acme',
     customerId: currentUser.stripeCustomerId,
     publishableKey: 'pk_live_abc123',
@@ -162,7 +162,7 @@ final controller = SteadpayController(
 controller.start();
 
 // Listen to stateStream and dismissedStream independently
-StreamBuilder<SteadpayState>(
+StreamBuilder<GatlioState>(
   stream: controller.stateStream,
   builder: (context, snap) { ... },
 )

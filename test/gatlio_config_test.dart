@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
-SteadpayConfig _validConfig({Duration? pollInterval}) => SteadpayConfig(
-      apiBase: 'https://app.steadpay.io',
+GatlioConfig _validConfig({Duration? pollInterval}) => GatlioConfig(
+      apiBase: 'https://app.gatlio.io',
       tenantSlug: 'acme',
       customerId: 'cus_123',
       publishableKey: 'pk_live_abc',
@@ -12,11 +12,11 @@ SteadpayConfig _validConfig({Duration? pollInterval}) => SteadpayConfig(
     );
 
 void main() {
-  group('SteadpayConfig', () {
+  group('GatlioConfig', () {
     test('http apiBase throws ArgumentError', () {
       expect(
-        () => SteadpayConfig(
-          apiBase: 'http://app.steadpay.io',
+        () => GatlioConfig(
+          apiBase: 'http://app.gatlio.io',
           tenantSlug: 'acme',
           customerId: 'cus_123',
           publishableKey: 'pk_live_abc',

@@ -3,19 +3,19 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:steadpay_flutter/steadpay_flutter.dart';
+import 'package:gatlio_flutter/gatlio_flutter.dart';
 
-SteadpayConfig _config() => SteadpayConfig(
-      apiBase: 'https://app.steadpay.io',
+GatlioConfig _config() => GatlioConfig(
+      apiBase: 'https://app.gatlio.io',
       tenantSlug: 'acme',
       customerId: 'cus_123',
       publishableKey: 'pk_live_abc',
       hmac: 'test_hmac',
     );
 
-SteadpayState _activeState() => SteadpayState(
-      status: SteadpayStatus.active,
-      cardUpdateUrl: 'https://app.steadpay.io/update-card',
+GatlioState _activeState() => GatlioState(
+      status: GatlioStatus.active,
+      cardUpdateUrl: 'https://app.gatlio.io/update-card',
       entitlements: const Entitlements(
         poweredByWatermark: true,
         customDomain: false,
@@ -23,9 +23,9 @@ SteadpayState _activeState() => SteadpayState(
       ),
     );
 
-FetchFn _mockFetch(SteadpayStatus status) => (_, __, ___, ____, _____) async => SteadpayState(
+FetchFn _mockFetch(GatlioStatus status) => (_, __, ___, ____, _____) async => GatlioState(
       status: status,
-      cardUpdateUrl: 'https://app.steadpay.io/update-card',
+      cardUpdateUrl: 'https://app.gatlio.io/update-card',
       entitlements: const Entitlements(
         poweredByWatermark: true,
         customDomain: false,
@@ -34,10 +34,10 @@ FetchFn _mockFetch(SteadpayStatus status) => (_, __, ___, ____, _____) async => 
     );
 
 void main() {
-  group('SteadpayController', () {
+  group('GatlioController', () {
     test('initial stateStream has no events before start()', () async {
-      final controller = SteadpayController(_config(), fetch: _mockFetch(SteadpayStatus.active));
-      final events = <SteadpayState>[];
+      final controller = GatlioController(_config(), fetch: _mockFetch(GatlioStatus.active));
+      final events = <GatlioState>[];
       controller.stateStream.listen(events.add);
 
       // Give a tick without starting
@@ -47,22 +47,22 @@ void main() {
     });
 
     test('start() emits correct status', () async {
-      final controller = SteadpayController(_config(), fetch: _mockFetch(SteadpayStatus.active));
+      final controller = GatlioController(_config(), fetch: _mockFetch(GatlioStatus.active));
 
       final emittedFuture = controller.stateStream.first
           .timeout(const Duration(seconds: 2));
       controller.start();
 
       final emitted = await emittedFuture;
-      expect(emitted.status, SteadpayStatus.active);
+      expect(emitted.status, GatlioStatus.active);
       controller.dispose();
     });
 
     test('forcedStatus emits immediately without polling', () async {
       var fetchCalled = false;
-      final controller = SteadpayController(
+      final controller = GatlioController(
         _config(),
-        forcedStatus: SteadpayStatus.lockout,
+        forcedStatus: GatlioStatus.lockout,
         fetch: (_, __, ___, ____, _____) async {
           fetchCalled = true;
           return _activeState();
@@ -73,13 +73,13 @@ void main() {
       controller.start();
 
       final state = await emitted;
-      expect(state.status, SteadpayStatus.lockout);
+      expect(state.status, GatlioStatus.lockout);
       expect(fetchCalled, isFalse);
       controller.dispose();
     });
 
     test('dismissWarning() emits true on dismissedStream', () async {
-      final controller = SteadpayController(_config(), fetch: _mockFetch(SteadpayStatus.warning));
+      final controller = GatlioController(_config(), fetch: _mockFetch(GatlioStatus.warning));
 
       final dismissed = controller.dismissedStream.first;
       controller.dismissWarning();
@@ -89,10 +89,10 @@ void main() {
     });
 
     test('triggerCardUpdate() resets dismissed to false', () async {
-      final controller = SteadpayController(
+      final controller = GatlioController(
         _config(),
-        forcedStatus: SteadpayStatus.lockout,
-        fetch: _mockFetch(SteadpayStatus.active),
+        forcedStatus: GatlioStatus.lockout,
+        fetch: _mockFetch(GatlioStatus.active),
         launch: (_) async => true,
       );
 
@@ -111,10 +111,10 @@ void main() {
 
     test('triggerCardUpdate() does not launch non-https URL', () async {
       var launchCalled = false;
-      final controller = SteadpayController(
+      final controller = GatlioController(
         _config(),
-        fetch: (_, __, ___, ____, _____) async => SteadpayState(
-          status: SteadpayStatus.lockout,
+        fetch: (_, __, ___, ____, _____) async => GatlioState(
+          status: GatlioStatus.lockout,
           cardUpdateUrl: 'javascript:alert(1)',
           entitlements: const Entitlements(poweredByWatermark: false, customDomain: false, downstreamWebhooks: false),
         ),
@@ -132,7 +132,7 @@ void main() {
     });
 
     test('dispose() closes streams', () async {
-      final controller = SteadpayController(_config(), fetch: _mockFetch(SteadpayStatus.active));
+      final controller = GatlioController(_config(), fetch: _mockFetch(GatlioStatus.active));
       controller.dispose();
 
       expect(controller.stateStream.isBroadcast, isTrue);
@@ -145,9 +145,9 @@ void main() {
       // assert that onError was not called.
       await runZonedGuarded(
         () async {
-          final controller = SteadpayController(
+          final controller = GatlioController(
             _config(),
-            callbacks: SteadpayCallbacks(onError: (_) => errorFired = true),
+            callbacks: GatlioCallbacks(onError: (_) => errorFired = true),
             fetch: (_, __, ___, ____, _____) async =>
                 throw AssertionError('programming defect'),
           );
@@ -162,9 +162,9 @@ void main() {
 
     test('dispose() closes the owned http client', () async {
       final client = _TrackingClient();
-      final controller = SteadpayController(
+      final controller = GatlioController(
         _config(),
-        fetch: _mockFetch(SteadpayStatus.active),
+        fetch: _mockFetch(GatlioStatus.active),
         httpClient: client,
       );
       expect(client.closed, isFalse);

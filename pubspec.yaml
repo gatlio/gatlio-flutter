@@ -1,7 +1,7 @@
-name: steadpay_flutter
-description: Native Flutter enforcement SDK for Steadpay billing states.
-version: 1.0.0
-homepage: https://github.com/steadpay/steadpay-flutter
+name: gatlio_flutter
+description: Native Flutter enforcement SDK for Gatlio billing states.
+version: 1.0.1
+homepage: https://github.com/gatlio/gatlio-flutter
 
 environment:
   sdk: ">=3.2.0 <4.0.0"

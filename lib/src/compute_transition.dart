@@ -1,28 +1,28 @@
-import 'steadpay_status.dart';
+import 'gatlio_status.dart';
 
 enum CallbackName { onLockout, onWarning, onActive, onRecovered }
 
 CallbackName? computeTransition(
-  SteadpayStatus? lastStatus,
-  SteadpayStatus newStatus,
+  GatlioStatus? lastStatus,
+  GatlioStatus newStatus,
   bool isRecoveryPath,
 ) {
   if (lastStatus == newStatus) return null;
 
   switch (newStatus) {
-    case SteadpayStatus.lockout:
+    case GatlioStatus.lockout:
       return CallbackName.onLockout;
-    case SteadpayStatus.warning:
+    case GatlioStatus.warning:
       if (lastStatus == null) return null;
       return CallbackName.onWarning;
-    case SteadpayStatus.active:
+    case GatlioStatus.active:
       if (lastStatus == null) return null;
-      if (lastStatus == SteadpayStatus.lockout && isRecoveryPath) {
+      if (lastStatus == GatlioStatus.lockout && isRecoveryPath) {
         return CallbackName.onRecovered;
       }
       return CallbackName.onActive;
-    case SteadpayStatus.loading:
-    case SteadpayStatus.error:
+    case GatlioStatus.loading:
+    case GatlioStatus.error:
       return null;
   }
 }

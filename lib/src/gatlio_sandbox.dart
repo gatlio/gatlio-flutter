@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 import 'compute_transition.dart';
 import 'enforcement_copy.dart';
 import 'lockout_screen.dart';
-import 'steadpay_gate.dart';
-import 'steadpay_status.dart';
+import 'gatlio_gate.dart';
+import 'gatlio_status.dart';
 import 'warning_banner.dart';
 
 const String _kRecoveredNote =
-    'onRecovered requires a real card update — test against a live Steadpay environment.';
+    'onRecovered requires a real card update — test against a live Gatlio environment.';
 
 const _kStatusColors = {
-  SteadpayStatus.active: Color(0xFF22C55E),
-  SteadpayStatus.warning: Color(0xFFF59E0B),
-  SteadpayStatus.lockout: Color(0xFFEF4444),
-  SteadpayStatus.error: Color(0xFF6B7280),
+  GatlioStatus.active: Color(0xFF22C55E),
+  GatlioStatus.warning: Color(0xFFF59E0B),
+  GatlioStatus.lockout: Color(0xFFEF4444),
+  GatlioStatus.error: Color(0xFF6B7280),
 };
 
-class SteadpaySandbox extends StatefulWidget {
+class GatlioSandbox extends StatefulWidget {
   final VoidCallback? onLockout;
   final VoidCallback? onWarning;
   final VoidCallback? onActive;
@@ -26,7 +26,7 @@ class SteadpaySandbox extends StatefulWidget {
   final WarningBannerBuilder? warningBanner;
   final Widget child;
 
-  const SteadpaySandbox({
+  const GatlioSandbox({
     super.key,
     this.onLockout,
     this.onWarning,
@@ -38,22 +38,22 @@ class SteadpaySandbox extends StatefulWidget {
   });
 
   @override
-  State<SteadpaySandbox> createState() => _SteadpaySandboxState();
+  State<GatlioSandbox> createState() => _GatlioSandboxState();
 }
 
-class _SteadpaySandboxState extends State<SteadpaySandbox> {
-  SteadpayStatus _currentStatus = SteadpayStatus.active;
-  SteadpayStatus? _lastStatus = SteadpayStatus.active;
+class _GatlioSandboxState extends State<GatlioSandbox> {
+  GatlioStatus _currentStatus = GatlioStatus.active;
+  GatlioStatus? _lastStatus = GatlioStatus.active;
   bool _panelOpen = false;
   bool _dismissed = false;
   final List<String> _log = [];
 
-  void _changeStatus(SteadpayStatus next) {
-    if (next == SteadpayStatus.error) {
-      if (_currentStatus == SteadpayStatus.error) return;
+  void _changeStatus(GatlioStatus next) {
+    if (next == GatlioStatus.error) {
+      if (_currentStatus == GatlioStatus.error) return;
       setState(() {
-        _currentStatus = SteadpayStatus.error;
-        _lastStatus = SteadpayStatus.error;
+        _currentStatus = GatlioStatus.error;
+        _lastStatus = GatlioStatus.error;
         _dismissed = false;
         _log.insert(0, 'onError(sandbox_error)');
         if (_log.length > 5) _log.removeLast();
@@ -66,7 +66,7 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
     setState(() {
       _currentStatus = next;
       _lastStatus = next;
-      if (next != SteadpayStatus.warning) _dismissed = false;
+      if (next != GatlioStatus.warning) _dismissed = false;
       if (cbName != null) {
         _log.insert(0, '${cbName.name}()');
         if (_log.length > 5) _log.removeLast();
@@ -89,7 +89,7 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
 
   Widget _buildGateContent(BuildContext context) {
     final locale = Localizations.maybeLocaleOf(context)?.languageCode ?? 'en';
-    if (_currentStatus == SteadpayStatus.lockout) {
+    if (_currentStatus == GatlioStatus.lockout) {
       final copy = lockoutCopy(
         const EnforcementContext(
           declineCategory: 'card_issue',
@@ -125,7 +125,7 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
 
     return Column(
       children: [
-        if (_currentStatus == SteadpayStatus.warning && !_dismissed)
+        if (_currentStatus == GatlioStatus.warning && !_dismissed)
           widget.warningBanner != null
               ? widget.warningBanner!(
                   dismissWarning: () => setState(() => _dismissed = true),
@@ -205,7 +205,7 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
           children: [
             const Expanded(
               child: Text(
-                'STEADPAY SANDBOX',
+                'GATLIO SANDBOX',
                 style: TextStyle(fontSize: 10, color: Color(0xFF444444), letterSpacing: 1),
               ),
             ),
@@ -228,17 +228,17 @@ class _SteadpaySandboxState extends State<SteadpaySandbox> {
         Wrap(
           spacing: 8,
           children: [
-            SteadpayStatus.active,
-            SteadpayStatus.warning,
-            SteadpayStatus.lockout,
-            SteadpayStatus.error,
+            GatlioStatus.active,
+            GatlioStatus.warning,
+            GatlioStatus.lockout,
+            GatlioStatus.error,
           ].map((s) {
             final isActive = _currentStatus == s;
             return GestureDetector(
               key: Key('sandbox-pill-${s.name}'),
               onTap: () {
                 _changeStatus(s);
-                if (s != SteadpayStatus.error) setState(() => _panelOpen = false);
+                if (s != GatlioStatus.error) setState(() => _panelOpen = false);
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

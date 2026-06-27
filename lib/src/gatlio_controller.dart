@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-import 'steadpay_config.dart';
-import 'steadpay_state.dart';
-import 'steadpay_status.dart';
+import 'gatlio_config.dart';
+import 'gatlio_state.dart';
+import 'gatlio_status.dart';
 import 'compute_transition.dart';
 import 'fetch_subscriber_status.dart';
 
-typedef FetchFn = Future<SteadpayState> Function(
+typedef FetchFn = Future<GatlioState> Function(
   String baseUrl,
   String tenantSlug,
   String customerId,
@@ -21,16 +21,16 @@ typedef LaunchFn = Future<bool> Function(Uri url);
 Future<bool> _defaultLaunch(Uri url) =>
     launchUrl(url, mode: LaunchMode.externalApplication);
 
-typedef SteadpayCallback = void Function(String customerId);
+typedef GatlioCallback = void Function(String customerId);
 
-class SteadpayCallbacks {
-  final SteadpayCallback? onLockout;
-  final SteadpayCallback? onWarning;
-  final SteadpayCallback? onActive;
-  final SteadpayCallback? onRecovered;
+class GatlioCallbacks {
+  final GatlioCallback? onLockout;
+  final GatlioCallback? onWarning;
+  final GatlioCallback? onActive;
+  final GatlioCallback? onRecovered;
   final void Function(Object error)? onError;
 
-  const SteadpayCallbacks({
+  const GatlioCallbacks({
     this.onLockout,
     this.onWarning,
     this.onActive,
@@ -41,27 +41,27 @@ class SteadpayCallbacks {
 
 /// Pure Dart state manager — zero Flutter imports.
 /// Constructor does zero IO. Call [start] to begin polling; [dispose] to clean up.
-class SteadpayController {
-  final SteadpayConfig config;
-  final SteadpayStatus? forcedStatus;
-  final SteadpayCallbacks? callbacks;
+class GatlioController {
+  final GatlioConfig config;
+  final GatlioStatus? forcedStatus;
+  final GatlioCallbacks? callbacks;
 
-  final _stateController = StreamController<SteadpayState>.broadcast();
+  final _stateController = StreamController<GatlioState>.broadcast();
   final _dismissedController = StreamController<bool>.broadcast();
 
-  Stream<SteadpayState> get stateStream => _stateController.stream;
+  Stream<GatlioState> get stateStream => _stateController.stream;
   Stream<bool> get dismissedStream => _dismissedController.stream;
 
   late final FetchFn _fetch;
   final LaunchFn _launch;
   final http.Client _httpClient;
   Timer? _timer;
-  SteadpayStatus? _lastStatus;
+  GatlioStatus? _lastStatus;
   String? _cardUpdateUrl;
   bool _isRecoveryPath = false;
   bool _disposed = false;
 
-  SteadpayController(
+  GatlioController(
     this.config, {
     this.forcedStatus,
     this.callbacks,
@@ -89,19 +89,19 @@ class SteadpayController {
       // Sample context so the sandbox renders representative copy.
       final sampleRetryAt =
           DateTime.now().toUtc().add(const Duration(days: 3)).toIso8601String();
-      _stateController.add(SteadpayState(
+      _stateController.add(GatlioState(
         status: forcedStatus!,
         cardUpdateUrl: testUrl,
         entitlements: null,
-        declineCategory: forcedStatus == SteadpayStatus.warning
+        declineCategory: forcedStatus == GatlioStatus.warning
             ? 'insufficient_funds'
-            : forcedStatus == SteadpayStatus.lockout
+            : forcedStatus == GatlioStatus.lockout
                 ? 'card_issue'
                 : null,
         nextRetryAt:
-            forcedStatus == SteadpayStatus.warning ? sampleRetryAt : null,
+            forcedStatus == GatlioStatus.warning ? sampleRetryAt : null,
         lockoutReason:
-            forcedStatus == SteadpayStatus.lockout ? 'hard_decline' : null,
+            forcedStatus == GatlioStatus.lockout ? 'hard_decline' : null,
       ));
       return;
     }
@@ -159,7 +159,7 @@ class SteadpayController {
       _lastStatus = state.status;
       _fireCallback(cbName);
 
-      if (state.status == SteadpayStatus.lockout) {
+      if (state.status == GatlioStatus.lockout) {
         _timer?.cancel();
         return;
       }
@@ -168,8 +168,8 @@ class SteadpayController {
     } catch (e) {
       if (e is Error) rethrow;
       if (_disposed) return;
-      _stateController.add(const SteadpayState(status: SteadpayStatus.error));
-      _lastStatus = SteadpayStatus.error;
+      _stateController.add(const GatlioState(status: GatlioStatus.error));
+      _lastStatus = GatlioStatus.error;
       callbacks?.onError?.call(e);
       _scheduleNextPoll();
     }
