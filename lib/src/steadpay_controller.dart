@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'steadpay_config.dart';
@@ -51,8 +52,9 @@ class SteadpayController {
   Stream<SteadpayState> get stateStream => _stateController.stream;
   Stream<bool> get dismissedStream => _dismissedController.stream;
 
-  final FetchFn _fetch;
+  late final FetchFn _fetch;
   final LaunchFn _launch;
+  final http.Client _httpClient;
   Timer? _timer;
   SteadpayStatus? _lastStatus;
   String? _cardUpdateUrl;
@@ -65,8 +67,20 @@ class SteadpayController {
     this.callbacks,
     FetchFn? fetch,
     LaunchFn? launch,
-  })  : _fetch = fetch ?? fetchSubscriberStatus,
-        _launch = launch ?? _defaultLaunch;
+    http.Client? httpClient,
+  })  : _httpClient = httpClient ?? http.Client(),
+        _launch = launch ?? _defaultLaunch {
+    _fetch = fetch ??
+        (baseUrl, tenantSlug, customerId, publishableKey, hmac) =>
+            fetchSubscriberStatus(
+              baseUrl,
+              tenantSlug,
+              customerId,
+              publishableKey,
+              hmac,
+              client: _httpClient,
+            );
+  }
 
   void start() {
     if (forcedStatus != null) {
@@ -104,6 +118,7 @@ class SteadpayController {
     _disposed = true;
     _timer?.cancel();
     _timer = null;
+    _httpClient.close();
     _stateController.close();
     _dismissedController.close();
   }
