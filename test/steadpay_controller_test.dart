@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:steadpay_flutter/steadpay_flutter.dart';
 
@@ -134,7 +135,47 @@ void main() {
 
       expect(controller.stateStream.isBroadcast, isTrue);
     });
+
+    test('Dart Error from fetch propagates and does not fire onError', () async {
+      var errorFired = false;
+      final controller = SteadpayController(
+        _config(),
+        callbacks: SteadpayCallbacks(onError: (_) => errorFired = true),
+        fetch: (_, __, ___, ____, _____) async =>
+            throw AssertionError('programming defect'),
+      );
+      controller.start();
+      await Future<void>.delayed(Duration.zero);
+      expect(errorFired, isFalse);
+      controller.dispose();
+    });
+
+    test('dispose() closes the owned http client', () async {
+      final client = _TrackingClient();
+      final controller = SteadpayController(
+        _config(),
+        fetch: _mockFetch(SteadpayStatus.active),
+        httpClient: client,
+      );
+      expect(client.closed, isFalse);
+      controller.dispose();
+      expect(client.closed, isTrue);
+    });
   });
+}
+
+class _TrackingClient extends http.BaseClient {
+  bool closed = false;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) =>
+      throw UnsupportedError('not used in this test');
+
+  @override
+  void close() {
+    closed = true;
+    super.close();
+  }
 }
 
 class TimeoutException implements Exception {
