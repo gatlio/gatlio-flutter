@@ -37,14 +37,14 @@ Future<GatlioState> fetchSubscriberStatus(
   final c = client ?? http.Client();
   final encodedSlug = Uri.encodeComponent(tenantSlug);
   final encodedCustomer = Uri.encodeComponent(customerId);
+  final encodedHmac = Uri.encodeComponent(hmac);
   final uri = Uri.parse(
-    '$baseUrl/api/subscriber-status/$encodedSlug?stripe_customer_id=$encodedCustomer',
+    '$baseUrl/api/subscriber-status/$encodedSlug?stripe_customer_id=$encodedCustomer&hmac=$encodedHmac',
   );
 
   final response = await c
       .get(uri, headers: {
         'Authorization': 'Bearer $publishableKey',
-        'X-Gatlio-HMAC': hmac,
       })
       .timeout(const Duration(seconds: 10));
 
